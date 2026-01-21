@@ -1,4 +1,5 @@
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+require('dotenv').config(); // ensures TOKEN is read from environment
 
 const commands = [
   new SlashCommandBuilder()
@@ -20,18 +21,16 @@ const commands = [
           { name: 'UK', value: 'UK' },
           { name: 'Other', value: 'Other' }
         ))
-].map(command => command.toJSON());
+].map(cmd => cmd.toJSON());
 
-// Use TOKEN from environment variable
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.MTQ2MzYzMTc2NTk4NDc3MjI1MA.GudD-M.o4pkedNmZBuW8FPN0v9X8jGEXYGjVfu6vsL650);
 
 (async () => {
   try {
     console.log('Registering slash commands...');
-    // Replace with your bot’s client ID
     await rest.put(
-      Routes.applicationCommands('1463631765984772250'),
-      { body: commands },
+      Routes.applicationCommands('1463631765984772250'), // Replace with your bot's Client ID
+      { body: commands }
     );
     console.log('Slash commands registered!');
   } catch (error) {

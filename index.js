@@ -1,34 +1,39 @@
+// Keep-alive server
+const express = require("express");
+const { Client, GatewayIntentBits } = require("discord.js");
+
+const app = express();
+app.get("/", (req, res) => res.send("Bot is awake"));
+app.listen(3000, () => console.log("Keep-alive server running"));
+
+// Discord bot setup
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+client.once("ready", () => console.log("Bot online"));
+
+// Interaction (slash command) listener
 client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "cost") return;
 
-  const quantity = interaction.options.getInteger("quantity");
-  const basePrice = interaction.options.getNumber("baseprice");
+  const qty = interaction.options.getInteger("quantity");
+  const base = interaction.options.getNumber("baseprice");
   const country = interaction.options.getString("country");
 
-  // Item cost
-  const itemsTotal = quantity * basePrice;
+  const items = qty * base;
 
-  // Shipping
   let shipping;
-  if (country === "UK") {
-    shipping = (5 * quantity) + 7;
-  } else {
-    shipping = (7.5 * quantity) + 12;
-  }
+  if (country === "UK") shipping = (5 * qty) + 7;
+  else shipping = (7.5 * qty) + 12;
 
-  // Bulk discount
-  if (quantity > 5) {
-    shipping *= 0.8; // 20% off shipping
-  }
+  if (qty > 5) shipping *= 0.8;
 
-  const total = itemsTotal + shipping;
+  const total = items + shipping;
 
-  await interaction.reply({
-    content:
-      `🧾 **Cost Breakdown**\n` +
-      `Items: £${itemsTotal.toFixed(2)}\n` +
-      `Shipping: £${shipping.toFixed(2)}${quantity > 5 ? " (20% bulk discount applied)" : ""}\n` +
-      `**Total: £${total.toFixed(2)}**`
-  });
+  await interaction.reply(
+    `🧾 Cost Breakdown:\nItems: £${items.toFixed(2)}\nShipping: £${shipping.toFixed(2)}\nTotal: £${total.toFixed(2)}`
+  );
 });
+
+// Login with your Discord bot token from environment variable
+client.login(process.env.TOKEN);

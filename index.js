@@ -1,4 +1,3 @@
-// Keep-alive server
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
 
@@ -6,34 +5,46 @@ const app = express();
 app.get("/", (req, res) => res.send("Bot is awake"));
 app.listen(3000, () => console.log("Keep-alive server running"));
 
-// Discord bot setup
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once("ready", () => console.log("Bot online"));
 
-// Interaction (slash command) listener
 client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName !== "cost") return;
 
-  const qty = interaction.options.getInteger("quantity");
-  const base = interaction.options.getNumber("baseprice");
-  const country = interaction.options.getString("country");
+  if (interaction.commandName === "cost") {
+    const qty = interaction.options.getInteger("quantity");
+    const base = interaction.options.getNumber("baseprice");
+    const country = interaction.options.getString("country");
 
-  const items = qty * base;
+    // If user forgot an input, guide them
+    if (!qty) return interaction.reply("❌ Please enter the **quantity** next time.");
+    if (!base) return interaction.reply("❌ Please enter the **base price** next time.");
+    if (!country) return interaction.reply("❌ Please select the **country** next time.");
 
-  let shipping;
-  if (country === "UK") shipping = (5 * qty) + 7;
-  else shipping = (7.5 * qty) + 12;
+    // Calculate items
+    const items = qty * base;
 
-  if (qty > 5) shipping *= 0.8;
+    // Calculate shipping
+    let shipping;
+    if (country === "UK") shipping = (5 * qty) + 7;
+    else shipping = (7.5 * qty) + 12;
 
-  const total = items + shipping;
+    // Bulk discount if quantity > 5
+    if (qty > 5) shipping *= 0.8;
 
-  await interaction.reply(
-    `🧾 Cost Breakdown:\nItems: £${items.toFixed(2)}\nShipping: £${shipping.toFixed(2)}\nTotal: £${total.toFixed(2)}`
-  );
+    const total = items + shipping;
+
+    await interaction.reply({
+      content: `🧾 **Cost Breakdown**\n
+- Items: £${items.toFixed(2)}
+- Shipping: £${shipping.toFixed(2)}
+- Total: £${total.toFixed(2)}
+
+💡 Next time, just enter your quantity, base price, and select the country in the command options.`,
+      ephemeral: false
+    });
+  }
 });
 
-// Login with your Discord bot token from environment variable
 client.login(process.env.TOKEN);

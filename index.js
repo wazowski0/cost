@@ -1,5 +1,6 @@
+// index.js
 const { Client, GatewayIntentBits } = require('discord.js');
-require('dotenv').config(); // ensures TOKEN is read from environment
+require('dotenv').config(); // read TOKEN from environment
 const express = require('express');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });

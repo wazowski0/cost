@@ -1,29 +1,31 @@
-const express = require("express");
-const { Client, GatewayIntentBits } = require("discord.js");
-
-const app = express();
-app.get("/", (req, res) => res.send("Bot is awake"));
-app.listen(3000, () => console.log("Keep-alive server running"));
+const { Client, GatewayIntentBits } = require('discord.js');
+require('dotenv').config(); // ensures TOKEN is read from environment
+const express = require('express');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-client.once("ready", () => console.log("Bot online"));
+// Keep-alive server for Render
+const app = express();
+app.get('/', (req, res) => res.send('Bot is running!'));
+app.listen(3000, () => console.log('Keep-alive server running on port 3000'));
 
-client.on("interactionCreate", async interaction => {
+// Handle interactions
+client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-  if (interaction.commandName === "cost") {
-    const qty = interaction.options.getInteger("quantity");
-    const base = interaction.options.getNumber("baseprice");
-    const country = interaction.options.getString("country");
+  if (interaction.commandName === 'cost') {
+    const qty = interaction.options.getInteger('quantity');
+    const basePrice = interaction.options.getNumber('baseprice');
+    const country = interaction.options.getString('country');
 
-    // If user forgot an input, guide them
-    if (!qty) return interaction.reply("❌ Please enter the **quantity** next time.");
-    if (!base) return interaction.reply("❌ Please enter the **base price** next time.");
-    if (!country) return interaction.reply("❌ Please select the **country** next time.");
+    if (qty == null || basePrice == null || country == null) {
+      return interaction.reply({
+        content: "❌ Please make sure you enter quantity, base price, and country.",
+        ephemeral: true
+      });
+    }
 
-    // Calculate items
-    const items = qty * base;
+    const items = basePrice * qty;
 
     // Calculate shipping
     let shipping;
@@ -47,4 +49,5 @@ client.on("interactionCreate", async interaction => {
   }
 });
 
+// Log in using environment variable
 client.login(process.env.TOKEN);
